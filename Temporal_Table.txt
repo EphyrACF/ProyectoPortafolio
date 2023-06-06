@@ -1,0 +1,20 @@
+--Es codigo hecho para BigQuery de Google, no deberia haber muchas diferencias con otros lenguajes SQL
+CREATE TABLE --Este codigo crea una tabla dentro de un proyecto anteriormente creado
+  mi-primer-proyecto-366120.Covid_Proyect.PorcentajePersonasVacunadas
+  (
+    continent STRING,
+    location STRING,
+    date DATETIME,
+    population INT64,
+    new_vaccinations INT64,
+    GenteVacunada INT64
+  )
+AS  
+    (
+    SELECT  dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations, --Crea una tabla temporal con las columnas de otras tablas dentro del proyecto
+    SUM(new_vaccinations) OVER (PARTITION BY dea.location ORDER BY dea.location, dea.date) AS GenteVacunada
+    FROM `mi-primer-proyecto-366120.Covid_Proyect.Vacunacion_Covid` vac
+    JOIN `mi-primer-proyecto-366120.Covid_Proyect.Muertes_Covid` dea
+      ON dea.location = vac.location
+      AND dea.date = vac.date
+    WHERE dea.continent IS NOT null)
