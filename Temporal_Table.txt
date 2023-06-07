@@ -1,5 +1,44 @@
 --Es codigo hecho para BigQuery de Google, no deberia haber muchas diferencias con otros lenguajes SQL
-CREATE TABLE --Este codigo crea una tabla dentro de un proyecto anteriormente creado
+--De una tabla de datos obtenidos del sitio "Our world in data", que se dividio en información sobre infección y otra sobre vacunación.
+
+
+--Casos totales contra Muertes totales
+SELECT location, date, total_cases, total_deaths, (total_deaths/total_cases)*100 AS Deaths_Per_Cases
+FROM `mi-primer-proyecto-366120.Covid_Proyect.Muertes_Covid`
+WHERE location LIKE "%xic%"
+ORDER BY 1,2
+
+--Casos totales contra Poblacion
+--Muestra la probabilidad de morir si te infectas en Mexico
+SELECT location, date, total_cases, population, (total_cases/population)*100 AS CasesPorcentaje
+FROM `mi-primer-proyecto-366120.Covid_Proyect.Muertes_Covid`
+WHERE location LIKE "%xic%"
+ORDER BY 1,2
+
+--Casos totales contra Poblacion
+SELECT location, population, MAX(total_cases) AS HightestInfectionCount, MAX((total_cases/population)*100) AS PorcentPopulationInfected
+FROM `mi-primer-proyecto-366120.Covid_Proyect.Muertes_Covid`
+--WHERE location LIKE "%xic%"
+GROUP BY location, population
+ORDER BY 4 DESC
+
+--Muestra a los paises con el mayor numero de muertes por caso
+SELECT location, MAX(total_deaths) AS SumaTotalMuertes
+FROM `mi-primer-proyecto-366120.Covid_Proyect.Muertes_Covid`
+WHERE continent IS null
+GROUP BY location
+ORDER BY 2 DESC
+
+--Muestra la probabilidad de morir si te contagias en tu pais
+SELECT  date, SUM(new_cases) AS total_cases, SUM(CAST(new_deaths AS int)) AS total_deaths, SUM(CAST(new_deaths AS int))/SUM(new_cases)*100 AS DeathPorcentages
+FROM `mi-primer-proyecto-366120.Covid_Proyect.Muertes_Covid`
+WHERE continent IS NOT null
+AND new_cases != 0
+GROUP BY date
+ORDER BY 1,2
+
+--Este codigo crea una tabla dentro de un proyecto anteriormente creado
+CREATE TABLE
   mi-primer-proyecto-366120.Covid_Proyect.PorcentajePersonasVacunadas
   (
     continent STRING,
@@ -18,3 +57,7 @@ AS
       ON dea.location = vac.location
       AND dea.date = vac.date
     WHERE dea.continent IS NOT null)
+
+--Elimina una tabla preexistente, así puedes cambiar los datos dentro del query anterior
+DROP TABLE IF EXISTS
+  mi-primer-proyecto-366120.Covid_Proyect.PorcentajePersonasVacunadas
